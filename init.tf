@@ -23,7 +23,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = "${var.domain == "" ? aws_lb.kubeapi.dns_name : "cp.${var.domain}"}:6443"
     cluster_ca_certificate = local.k_config.host_cert
     client_key             = local.k_config.cert_data
