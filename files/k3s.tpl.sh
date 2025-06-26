@@ -7,7 +7,8 @@ software_install
 software_install() {
   set -x
   echo "Install additional software here..."
-  curl https://releases.rancher.com/install-docker/24.0.2.sh | bash
+  #Docker is not required for RKE2 or K3s clusters.
+  #curl https://releases.rancher.com/install-docker/24.0.2.sh | bash
   apt-get install -y jq wget unzip python3-pip
   pip3 install awscli
 
