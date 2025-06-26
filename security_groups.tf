@@ -1,6 +1,6 @@
 resource "aws_security_group" "master" {
   name   = "${local.name}-master"
-  vpc_id = data.aws_subnet.public_subnet[0].vpc_id
+  vpc_id = data.aws_subnet.private_subnet[0].vpc_id
   depends_on = [
     null_resource.validate_domain_length
   ]
@@ -48,7 +48,7 @@ resource "aws_security_group" "master" {
     from_port   = 2379
     to_port     = 2380
     protocol    = "tcp"
-    cidr_blocks = data.aws_subnet.public_subnet.*.cidr_block
+    cidr_blocks = data.aws_subnet.private_subnet.*.cidr_block
   }
   ingress {
     description = "allow vxlan master self"
@@ -62,7 +62,7 @@ resource "aws_security_group" "master" {
     from_port   = 8472
     to_port     = 8472
     protocol    = "udp"
-    cidr_blocks = data.aws_subnet.public_subnet.*.cidr_block
+    cidr_blocks = data.aws_subnet.private_subnet.*.cidr_block
   }
 
   ingress {
@@ -77,14 +77,14 @@ resource "aws_security_group" "master" {
     from_port   = 6942
     to_port     = 6942
     protocol    = "tcp"
-    cidr_blocks = data.aws_subnet.public_subnet.*.cidr_block
+    cidr_blocks = data.aws_subnet.private_subnet.*.cidr_block
   }
 }
 
 
 resource "aws_security_group" "worker" {
   name   = "${local.name}-worker"
-  vpc_id = data.aws_subnet.public_subnet[0].vpc_id
+  vpc_id = data.aws_subnet.private_subnet[0].vpc_id
   depends_on = [
     null_resource.validate_domain_length
   ]
