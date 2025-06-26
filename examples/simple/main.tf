@@ -35,7 +35,8 @@ module "k3s" {
   region                  = local.region
   key_name                = local.key_name
   k3s_version             = local.k3s_version
-  public_subnets          = module.vpc.private_subnets
+  private_subnets          = module.vpc.private_subnets
+  public_subnets          = module.vpc.public_subnets
   s3_bucket               = local.s3_bucket
   domain                  = local.domain
   worker_node_groups      = local.worker_node_groups

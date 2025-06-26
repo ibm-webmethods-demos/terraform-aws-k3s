@@ -55,7 +55,7 @@ resource "aws_autoscaling_group" "master" {
   desired_capacity    = 1
   max_size            = 1
   min_size            = 1
-  vpc_zone_identifier = var.public_subnets
+  vpc_zone_identifier = var.private_subnets
 
   target_group_arns = [
     aws_lb_target_group.kubeapi.arn
@@ -84,7 +84,7 @@ resource "aws_autoscaling_group" "worker" {
   max_size            = each.value.max_size
   min_size            = each.value.min_size
   desired_capacity    = each.value.desired_capacity
-  vpc_zone_identifier = var.public_subnets
+  vpc_zone_identifier = var.private_subnets
 
   launch_template {
     id      = aws_launch_template.worker[each.key].id

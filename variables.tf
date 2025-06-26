@@ -54,11 +54,15 @@ variable "k3s_version" {
   type        = string
 }
 
+variable "private_subnets" {
+  description = "List of private subnets to run the K3s cluster"
+  type        = list(any)
+}
+
 variable "public_subnets" {
   description = "List of public subnets to run ingress LB"
   type        = list(any)
 }
-
 
 variable "s3_bucket" {
   description = "Kubeconfig Storage bucket"
