@@ -110,7 +110,6 @@ variable "worker_iam_policies" {
   default     = []
 }
 
-
 variable "enable_asg_rolling_auto_update" {
   description = "Turn on/off automatic rolling update of worker ASGs, when launch configuration changed."
   type        = bool
@@ -121,4 +120,10 @@ variable "enable_scheduling_on_master" {
   description = "Allows running pods on master nodes."
   type        = bool
   default     = false
+}
+
+variable "enable_asg_master_nodes" {
+  description = "Turn on/off ASG for master"
+  type        = bool
+  default     = true
 }

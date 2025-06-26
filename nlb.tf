@@ -3,7 +3,10 @@ resource "aws_lb" "kubeapi" {
   internal           = false
   load_balancer_type = "network"
   subnets            = var.public_subnets
+  security_groups    = [aws_security_group.kubeapi.id]
   tags               = local.common_tags
+  enable_cross_zone_load_balancing = true
+  
   # depends_on = [
   #   null_resource.validate_domain_length
   # ]

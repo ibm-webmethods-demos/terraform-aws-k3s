@@ -141,3 +141,20 @@ resource "aws_security_group" "worker" {
     security_groups = [aws_security_group.master.id]
   }
 }
+
+resource "aws_security_group" "kubeapi" {
+  name   = "${local.name}-kubeapi"
+  vpc_id   = data.aws_subnet.public_subnet[0].vpc_id
+  depends_on = [
+    null_resource.validate_domain_length
+  ]
+  tags = local.common_tags
+
+  ingress {
+    description = "kube api"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "TCP"
+    cidr_blocks = ["172.28.4.90/32"]
+  }
+}

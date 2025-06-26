@@ -1,5 +1,5 @@
 resource "aws_launch_template" "master" {
-  count         = var.master_node_count
+  count         = var.enable_asg_master_nodes ? var.master_node_count : 0
   name_prefix   = substr("${local.name}-master-${count.index}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = var.master_instance_type
@@ -50,7 +50,7 @@ resource "aws_launch_template" "worker" {
 }
 
 resource "aws_autoscaling_group" "master" {
-  count               = var.master_node_count
+  count               = var.enable_asg_master_nodes ? var.master_node_count : 0
   name_prefix         = substr("${local.name}-master-${count.index}", 0, 32)
   desired_capacity    = 1
   max_size            = 1
@@ -100,6 +100,29 @@ resource "aws_autoscaling_group" "worker" {
     }
   }
 
+  depends_on = [
+    aws_lb.kubeapi
+  ]
+}
+
+resource "aws_instance" "master" {
+  count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
+  subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
+
+  launch_template {
+    id      = aws_launch_template.master[count.index].id
+    version = "$Latest"
+  }
+  
+  dynamic "tag" {
+    for_each = local.master_tags
+    content {
+      key                 = tag.value.key
+      propagate_at_launch = tag.value.propagate_at_launch
+      value               = tag.value.value
+    }
+  }
+  
   depends_on = [
     aws_lb.kubeapi
   ]
