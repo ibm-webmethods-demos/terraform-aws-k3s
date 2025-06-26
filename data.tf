@@ -1,14 +1,15 @@
 data "aws_ami" "default_ami" {
   most_recent = true
+  owners      = ["099720109477"] # Canonical
+
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20220420"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-  owners = ["099720109477"]
 }
 
 data "template_file" "init-master" {
