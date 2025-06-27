@@ -163,6 +163,24 @@ resource "kubernetes_deployment" "aws_asg_roller" {
   }
 }
 
+resource "kubernetes_namespace" "nginx" {
+  metadata {
+    name = "nginx"
+  }
+}
+
+resource "helm_release" "nginx" {
+  name       = "ingress-nginx"
+  chart      = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  version    = "4.12.3"
+  timeout    = "1500"
+  namespace  = kubernetes_namespace.nginx.id
+  values = [
+    file("${path.module}/values/nginx.yaml")
+  ]
+}
+
 resource "kubernetes_namespace" "argocd" {
   metadata {
     name = "argocd"

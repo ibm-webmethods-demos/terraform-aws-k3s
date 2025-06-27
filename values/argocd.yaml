@@ -1,19 +1,27 @@
-# redis-ha:
-#   enabled: true
+redis-ha:
+  enabled: true
 
 controller:
   replicas: 1
 
-server:
-  replicas: 1
-  service:
-    type: LoadBalancer
-    annotations: 
-      service.beta.kubernetes.io/aws-load-balancer-type=nlb
-
 repoServer:
-  replicas: 1
+  replicas: 2
 
 applicationSet:
-  replicaCount: 1
-  # replicaCount: 2
+  replicas: 2
+
+global:
+  domain: argocd.ibm-demos.com
+
+certificate:
+  enabled: true
+
+server:
+  replicas: 2
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    tls: true
