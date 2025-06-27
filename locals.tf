@@ -1,6 +1,7 @@
 
 locals {
   name                   = var.cluster_name
+  cluster_domain_validate =  "${var.cluster_name}.${var.domain}"
   cluster_domain         = var.domain == "" ? aws_lb.kubeapi.dns_name : "${var.cluster_name}.${var.domain}"
   s3_kubeconfig_filename = "kubeconfig"
   common_tags = {
@@ -72,6 +73,6 @@ locals {
 
 resource "null_resource" "validate_domain_length" {
   provisioner "local-exec" {
-    command = var.domain == "" ? "exit 0" : "if [ ${length(local.cluster_domain)} -ge 38 ]; then echo \"ERR: \nThe length of the domain for kubeapi (domain:${local.cluster_domain}, length:${length(local.cluster_domain)}) must not exceed 37 characters.\nDomain name includes variables 'var.cluster_name' (${var.cluster_name}) and 'var.domain' (${var.domain}).\nCheck the length of these variables.\" ; exit 1; fi"
+    command = var.domain == "" ? "exit 0" : "if [ ${length(local.cluster_domain_validate)} -ge 38 ]; then echo \"ERR: \nThe length of the domain for kubeapi (domain:${local.cluster_domain_validate}, length:${length(local.cluster_domain_validate)}) must not exceed 37 characters.\nDomain name includes variables 'var.cluster_name' (${var.cluster_name}) and 'var.domain' (${var.domain}).\nCheck the length of these variables.\" ; exit 1; fi"
   }
 }
