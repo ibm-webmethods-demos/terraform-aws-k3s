@@ -2,14 +2,13 @@ controller:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-        - podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - ebs-csi-controller
-            topologyKey: kubernetes.io/hostname
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - ebs-csi-controller
+          topologyKey: kubernetes.io/hostname
 
 node:
   nodeSelector: {}
