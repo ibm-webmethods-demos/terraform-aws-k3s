@@ -178,6 +178,7 @@ resource "helm_release" "argocd" {
   namespace  = kubernetes_namespace.argocd.id
   values = [
     file("${path.module}/values/argocd.yaml")
+  ]
 }
 
 resource "null_resource" "password" {
