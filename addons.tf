@@ -14,7 +14,7 @@ resource "helm_release" "aws_lb_csi" {
   name       = "aws-ebs-csi-driver"
   repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
   chart      = "aws-ebs-csi-driver"
-  version    = "2.24.0"
+  version    = "2.45.1"
   values = [
     file("${path.module}/values/csi.yaml")
   ]
