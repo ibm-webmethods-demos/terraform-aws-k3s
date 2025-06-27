@@ -9,7 +9,7 @@ controller:
                   operator: In
                   values:
                     - ebs-csi-controller
-            topologyKey: "kubernetes.io/hostname"
+            topologyKey: kubernetes.io/hostname
 
 node:
   nodeSelector: {}
