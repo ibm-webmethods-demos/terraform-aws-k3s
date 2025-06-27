@@ -1,21 +1,15 @@
-enableVolumeResizing: true
-enableVolumeSnapshot: false
-
-tolerateAllTaints: true
-
-tolerations:
-  - operator: Exists
-
-affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-            - key: app
-              operator: In
-              values:
-                - ebs-csi-controller
-        topologyKey: "kubernetes.io/hostname"
+controller:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - ebs-csi-controller
+            topologyKey: "kubernetes.io/hostname"
 
 # If set, add pv/pvc metadata to plugin create requests as parameters.
 extraCreateMetadata: false
@@ -26,9 +20,3 @@ node:
     iam.amazonaws.com/role: k8s_ebs_csi_driver
   tolerateAllTaints: true
   tolerations: []
-
-serviceAccount:
-  controller:
-    annotations: {}
-  snapshot:
-    annotations: {}
