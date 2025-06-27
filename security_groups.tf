@@ -155,7 +155,7 @@ resource "aws_security_group" "kubeapi" {
     from_port   = 6443
     to_port     = 6443
     protocol    = "TCP"
-    cidr_blocks = ["172.28.4.90/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
