@@ -78,8 +78,24 @@ resource "aws_autoscaling_group" "master" {
   ]
 }
 
+resource "aws_instance" "master" {
+  count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
+  subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
+  tags = local.master_tags
+
+  launch_template {
+    id      = aws_launch_template.master[count.index].id
+    version = "$Latest"
+  }
+  
+  depends_on = [
+    aws_lb.kubeapi
+  ]
+}
+
 resource "aws_autoscaling_group" "worker" {
   for_each            = local.worker_groups_map
+  count               = var.enable_asg_worker_nodes ? 0 : 1
   name_prefix         = substr("${local.name}-worker-${each.key}", 0, 32)
   max_size            = each.value.max_size
   min_size            = each.value.min_size
@@ -92,7 +108,7 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   dynamic "tag" {
-    for_each = local.master_tags
+    for_each = each.value.tags
     content {
       key                 = tag.value.key
       propagate_at_launch = tag.value.propagate_at_launch
@@ -105,16 +121,25 @@ resource "aws_autoscaling_group" "worker" {
   ]
 }
 
-resource "aws_instance" "master" {
-  count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
+resource "aws_instance" "worker" {
+  for_each      = local.worker_groups_map
+  count         = var.enable_asg_worker_nodes ? 0 : each.value.desired_capacity
   subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
-  tags = local.master_tags
-
+  
   launch_template {
-    id      = aws_launch_template.master[count.index].id
+    id      = aws_launch_template.worker[each.key].id
     version = "$Latest"
   }
   
+  dynamic "tag" {
+    for_each = each.value.tags
+    content {
+      key                 = tag.value.key
+      propagate_at_launch = tag.value.propagate_at_launch
+      value               = tag.value.value
+    }
+  }
+
   depends_on = [
     aws_lb.kubeapi
   ]

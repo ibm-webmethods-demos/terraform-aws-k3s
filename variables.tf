@@ -127,3 +127,9 @@ variable "enable_asg_master_nodes" {
   type        = bool
   default     = true
 }
+
+variable "enable_asg_worker_nodes" {
+  description = "Turn on/off ASG for master"
+  type        = bool
+  default     = true
+}
