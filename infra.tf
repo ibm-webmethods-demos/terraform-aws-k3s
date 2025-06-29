@@ -90,7 +90,8 @@ resource "aws_instance" "master" {
   }
   
   depends_on = [
-    aws_lb.kubeapi
+    aws_lb.kubeapi,
+    aws_launch_template.master
   ]
 }
 

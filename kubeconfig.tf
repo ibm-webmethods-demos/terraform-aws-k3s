@@ -5,7 +5,7 @@ resource "null_resource" "wait_cluster_ready" {
   depends_on = [
     aws_autoscaling_group.master,
     aws_autoscaling_group.worker,
-
+    aws_instance.master
   ]
 }
 
