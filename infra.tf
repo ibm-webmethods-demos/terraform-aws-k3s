@@ -67,7 +67,7 @@ resource "aws_autoscaling_group" "master" {
   }
 
   dynamic "tag" {
-    for_each = local.master_tags
+    for_each = local.master_tags_asg
     content {
       key                 = tag.value.key
       propagate_at_launch = tag.value.propagate_at_launch
@@ -82,19 +82,11 @@ resource "aws_autoscaling_group" "master" {
 resource "aws_instance" "master" {
   count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
   subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
-  # tags = local.master_tags
+  tags = local.master_tags
 
   launch_template {
     id      = aws_launch_template.master[count.index].id
     version = "$Latest"
-  }
-
-  dynamic "tag" {
-    for_each = local.master_tags
-    content {
-      key                 = tag.value.key
-      value               = tag.value.value
-    }
   }
   
   depends_on = [

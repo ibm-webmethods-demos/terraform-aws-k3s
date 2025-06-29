@@ -43,13 +43,16 @@ locals {
     }
   }
 
-  master_tags = [
-    for tag_key, tag_val in merge(var.master_additional_tags, local.common_tags, { Name = "${var.cluster_name}-master" }) : {
+  master_tags = merge(var.master_additional_tags, local.common_tags, { Name = "${var.cluster_name}-master" })
+  
+  master_tags_asg = [
+    for tag_key, tag_val in master_tags : {
       key                 = tag_key
       value               = tag_val
       propagate_at_launch = true
     }
   ]
+
   master_node_labels = join(" ",
     [for label in var.master_node_labels :
       "--node-label \"${label}\""
