@@ -1,5 +1,5 @@
 resource "aws_launch_template" "master" {
-  count         = var.enable_asg_master_nodes ? var.master_node_count : 0
+  count         = var.master_node_count
   name_prefix   = substr("${local.name}-master-${count.index}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = var.master_instance_type
@@ -65,6 +65,7 @@ resource "aws_autoscaling_group" "master" {
     id      = aws_launch_template.master[count.index].id
     version = "$Latest"
   }
+
   dynamic "tag" {
     for_each = local.master_tags
     content {
@@ -94,8 +95,9 @@ resource "aws_instance" "master" {
 }
 
 resource "aws_autoscaling_group" "worker" {
-  for_each            = local.worker_groups_map
-  count               = var.enable_asg_worker_nodes ? 0 : 1
+  for_each = (
+    var.enable_asg_worker_nodes == false ? {} : local.worker_groups_map
+  )
   name_prefix         = substr("${local.name}-worker-${each.key}", 0, 32)
   max_size            = each.value.max_size
   min_size            = each.value.min_size
@@ -121,26 +123,25 @@ resource "aws_autoscaling_group" "worker" {
   ]
 }
 
-resource "aws_instance" "worker" {
-  for_each      = local.worker_groups_map
-  count         = var.enable_asg_worker_nodes ? 0 : each.value.desired_capacity
-  subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
+# resource "aws_instance" "worker" {
+#   count = var.enable_asg_worker_nodes ? 0 : local.worker_groups_map[0].desired_capacity
+#   subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
   
-  launch_template {
-    id      = aws_launch_template.worker[each.key].id
-    version = "$Latest"
-  }
+#   launch_template {
+#     id      = aws_launch_template.worker[each.key].id
+#     version = "$Latest"
+#   }
   
-  dynamic "tag" {
-    for_each = each.value.tags
-    content {
-      key                 = tag.value.key
-      propagate_at_launch = tag.value.propagate_at_launch
-      value               = tag.value.value
-    }
-  }
+#   dynamic "tag" {
+#     for_each = each.value.tags
+#     content {
+#       key                 = tag.value.key
+#       propagate_at_launch = tag.value.propagate_at_launch
+#       value               = tag.value.value
+#     }
+#   }
 
-  depends_on = [
-    aws_lb.kubeapi
-  ]
-}
+#   depends_on = [
+#     aws_lb.kubeapi
+#   ]
+# }
