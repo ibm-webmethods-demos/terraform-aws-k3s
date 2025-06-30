@@ -5,9 +5,11 @@ resource "aws_launch_template" "master" {
   instance_type = var.master_instance_type
   user_data     = data.template_cloudinit_config.init-master[count.index].rendered
   key_name      = var.key_name
+  
   iam_instance_profile {
     name = aws_iam_instance_profile.master_profile.name
   }
+
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
@@ -16,15 +18,18 @@ resource "aws_launch_template" "master" {
       volume_size = var.master_root_volume_size
     }
   }
+
   credit_specification {
     cpu_credits = "standard"
   }
+
   network_interfaces {
     delete_on_termination = true
     associate_public_ip_address = false
     security_groups       = concat([aws_security_group.master.id], var.master_security_group_ids)
     subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
   }
+  
   tags = local.common_tags
 }
 
@@ -35,6 +40,7 @@ resource "aws_launch_template" "worker" {
   instance_type = each.value.instance_type
   user_data     = data.template_cloudinit_config.init-worker[each.key].rendered
   key_name      = var.key_name
+
   iam_instance_profile {
     name = aws_iam_instance_profile.worker_profile.name
   }
@@ -47,10 +53,12 @@ resource "aws_launch_template" "worker" {
       volume_size = each.value.root_volume_size
     }
   }
+
   network_interfaces {
     delete_on_termination = true
     security_groups       = concat([aws_security_group.worker.id], each.value.additional_security_group_ids)
   }
+  
   tags = local.common_tags
 }
 
@@ -95,7 +103,8 @@ resource "aws_instance" "master" {
   tags = local.master_tags
   
   depends_on = [
-    aws_lb.kubeapi
+    aws_lb.kubeapi,
+    aws_security_group.master
   ]
 }
 
