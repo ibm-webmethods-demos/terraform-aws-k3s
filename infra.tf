@@ -95,8 +95,7 @@ resource "aws_instance" "master" {
   tags = local.master_tags
   
   depends_on = [
-    aws_lb.kubeapi,
-    aws_launch_template.master
+    aws_lb.kubeapi
   ]
 }
 
@@ -125,7 +124,9 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   depends_on = [
-    aws_lb.kubeapi
+    aws_lb.kubeapi,
+    aws_autoscaling_group.master,
+    aws_instance.master
   ]
 }
 
@@ -148,6 +149,8 @@ resource "aws_autoscaling_group" "worker" {
 #   }
 
 #   depends_on = [
-#     aws_lb.kubeapi
+#     aws_lb.kubeapi,
+#     aws_autoscaling_group.master,
+#     aws_instance.master
 #   ]
 # }
