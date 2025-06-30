@@ -58,7 +58,7 @@ resource "aws_launch_template" "worker" {
     delete_on_termination = true
     security_groups       = concat([aws_security_group.worker.id], each.value.additional_security_group_ids)
   }
-  
+
   tags = local.common_tags
 }
 
@@ -106,6 +106,13 @@ resource "aws_instance" "master" {
     aws_lb.kubeapi,
     aws_security_group.master
   ]
+}
+
+resource "aws_lb_target_group_attachment" "master" {
+  count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
+  
+  target_group_arn = aws_lb_target_group.kubeapi.arn
+  target_id        = aws_instance.master[count.index].id
 }
 
 resource "aws_autoscaling_group" "worker" {
