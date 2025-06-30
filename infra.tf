@@ -23,6 +23,7 @@ resource "aws_launch_template" "master" {
     delete_on_termination = true
     associate_public_ip_address = false
     security_groups       = concat([aws_security_group.master.id], var.master_security_group_ids)
+    subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
   }
   tags = local.common_tags
 }
@@ -85,13 +86,13 @@ resource "aws_autoscaling_group" "master" {
 
 resource "aws_instance" "master" {
   count         = var.enable_asg_master_nodes ? 0 : var.master_node_count 
-  # subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
-  tags = local.master_tags
 
   launch_template {
     id      = aws_launch_template.master[count.index].id
     version = "$Latest"
   }
+
+  tags = local.master_tags
   
   depends_on = [
     aws_lb.kubeapi,
