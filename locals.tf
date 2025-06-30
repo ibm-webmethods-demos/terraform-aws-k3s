@@ -33,7 +33,7 @@ locals {
       instance_type                 = lookup(node_group_config, "instance_type", local.default_worker_instance_type)
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
       tags = [
-        for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = concat(var.cluster_name,"-",node_group_config.name), Description = concat(var.cluster_name,"-",node_group_config.name) }) :
+        for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :
         {
           key                 = tag_key
           value               = tag_val
@@ -43,7 +43,7 @@ locals {
     }
   }
 
-  master_tags = merge(var.master_additional_tags, local.common_tags, { Name = concat(var.cluster_name,"-","master"), Description = concat(var.cluster_name,"-","master") })
+  master_tags = merge(var.master_additional_tags, local.common_tags, { Name = join("-", [var.cluster_name,"master"]), Description = join("-", [var.cluster_name,"master"]) })
   
   master_tags_asg = [
     for tag_key, tag_val in local.master_tags : {
