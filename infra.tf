@@ -146,6 +146,19 @@ resource "aws_autoscaling_group" "worker" {
   ]
 }
 
+resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
+  for_each = (
+    var.enable_asg_worker_nodes == false ? {} : local.worker_groups_map
+  )
+  scheduled_action_name  = substr("${local.name}-worker-${each.key}-shutdown", 0, 32)
+  min_size               = 0
+  max_size               = 0
+  desired_capacity       = 0
+  recurrence             = "0 0 * * *"
+  start_time             = each.value.daily_shutdown_utc
+  autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
+}
+
 # resource "aws_instance" "worker" {
 #   count = var.enable_asg_worker_nodes ? 0 : local.worker_groups_map[0].desired_capacity
 #   subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
