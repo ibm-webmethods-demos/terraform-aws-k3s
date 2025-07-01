@@ -48,7 +48,7 @@ locals {
       ]
     }
   }
-
+  
   worker_groups_map_with_schedule = {
     for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.daily_shutdown_utc != ""
   }
@@ -82,6 +82,10 @@ locals {
   asg_list = join(",", [for key, value in aws_autoscaling_group.worker :
     value.name
   ])
+  
+  # useful for the scheduling actions
+  current_time = timestamp()
+  current_day = formatdate("YYYY-MM-DD", local.current_time)
 }
 
 resource "null_resource" "validate_domain_length" {
