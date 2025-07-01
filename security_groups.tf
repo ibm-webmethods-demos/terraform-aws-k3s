@@ -79,6 +79,8 @@ resource "aws_security_group" "master" {
     protocol    = "tcp"
     cidr_blocks = data.aws_subnet.private_subnet.*.cidr_block
   }
+
+  lifecycle { create_before_destroy = true }
 }
 
 
@@ -140,6 +142,8 @@ resource "aws_security_group" "worker" {
     protocol        = "tcp"
     security_groups = [aws_security_group.master.id]
   }
+
+  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_security_group" "kubeapi" {

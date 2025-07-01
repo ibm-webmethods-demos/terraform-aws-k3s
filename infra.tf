@@ -106,6 +106,8 @@ resource "aws_instance" "master" {
     aws_lb.kubeapi,
     aws_security_group.master
   ]
+  
+  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_lb_target_group_attachment" "master" {
