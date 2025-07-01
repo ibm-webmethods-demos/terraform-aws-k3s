@@ -90,8 +90,6 @@ resource "aws_autoscaling_group" "master" {
   depends_on = [
     aws_lb.kubeapi
   ]
-  
-  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_instance" "master" {
@@ -108,8 +106,6 @@ resource "aws_instance" "master" {
     aws_lb.kubeapi,
     aws_security_group.master
   ]
-  
-  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_lb_target_group_attachment" "master" {
@@ -146,8 +142,6 @@ resource "aws_autoscaling_group" "worker" {
     aws_autoscaling_group.master,
     aws_instance.master
   ]
-  
-  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
