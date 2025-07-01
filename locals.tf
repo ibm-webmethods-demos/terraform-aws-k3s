@@ -15,8 +15,11 @@ locals {
   ]
   default_master_node_taints = var.enable_scheduling_on_master == true ? [] : ["node-role.kubernetes.io/master:NoSchedule"]
   worker_groups_map = {
-    for node_group_config in var.worker_node_groups :
-    node_group_config.name => {
+    for idx, node_group_config in var.worker_node_groups :
+    join("-",[node_group_config.name,idx]) => {
+      name                          = node_group_config.name
+      index                         = idx
+      
       # Use sort() function to make sure the variable is a list.
       node_taints = join(" ",
         [for taint in sort(lookup(node_group_config, "node_taints", [])) :
@@ -26,12 +29,15 @@ locals {
         [for label in concat(sort(lookup(node_group_config, "node_labels", [])), local.default_worker_node_labels) :
           "--node-label \"${label}\""
       ])
+      
       min_size                      = node_group_config.min_size
       max_size                      = node_group_config.max_size
       desired_capacity              = lookup(node_group_config, "desired_capacity", node_group_config.min_size)
       root_volume_size              = lookup(node_group_config, "root_volume_size", local.default_worker_root_volume_size)
       instance_type                 = lookup(node_group_config, "instance_type", local.default_worker_instance_type)
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
+      daily_shutdown_utc            = lookup(node_group_config, "daily_shutdown_utc", "")
+       
       tags = [
         for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :
         {
@@ -41,6 +47,10 @@ locals {
         }
       ]
     }
+  }
+
+  worker_groups_map_with_schedule = {
+    for worker_group_name, worker_group in locals.worker_groups_map : worker_group_name => worker_group if worker_group.daily_shutdown_utc != ""
   }
 
   master_tags = merge(var.master_additional_tags, local.common_tags, { Name = join("-", [var.cluster_name,"master"]), Description = join("-", [var.cluster_name,"master"]) })
