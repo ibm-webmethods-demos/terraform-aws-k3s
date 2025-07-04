@@ -7,7 +7,7 @@ terraform {
     }
     null     = "~> 3.2"
     random   = "~> 3.4"
-    template = "~> 2.2"
+    cloudinit_config = "~> 2.2.0"
   }
 }
 

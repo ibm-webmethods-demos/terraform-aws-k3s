@@ -3,7 +3,7 @@ resource "aws_launch_template" "master" {
   name_prefix   = substr("${local.name}-master-${count.index}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = var.master_instance_type
-  user_data     = data.template_cloudinit_config.init-master[count.index].rendered
+  user_data     = data.cloudinit_config.init-master[count.index].rendered
   key_name      = var.key_name
   
   iam_instance_profile {
@@ -38,7 +38,7 @@ resource "aws_launch_template" "worker" {
   name_prefix   = substr("${local.name}-worker-${each.key}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = each.value.instance_type
-  user_data     = data.template_cloudinit_config.init-worker[each.key].rendered
+  user_data     = data.cloudinit_config.init-worker[each.key].rendered
   key_name      = var.key_name
 
   iam_instance_profile {
