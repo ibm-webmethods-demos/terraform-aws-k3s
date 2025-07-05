@@ -13,9 +13,9 @@ data "aws_ami" "default_ami" {
 }
 
 data "cloudinit_config" "init-master" {
+  count         = var.master_node_count
   gzip          = true
   base64_encode = true
-  count         = var.master_node_count
 
   part {
     content_type = "text/x-shellscript"
