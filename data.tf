@@ -56,6 +56,7 @@ data "cloudinit_config" "init-worker" {
                   cluster_domain   = local.cluster_domain
                   node_labels      = each.value.node_labels
                   node_taints      = each.value.node_taints
+                  s3_bucket        = ""
                   extra_args       = ""
                   kubeconfig_name  = ""
                 }
