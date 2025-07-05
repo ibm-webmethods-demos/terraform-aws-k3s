@@ -52,9 +52,12 @@ data "cloudinit_config" "init-worker" {
                   instance_index   = "null"
                   k3s_server_token = random_password.k3s_server_token.result
                   k3s_version      = var.k3s_version
+                  cluster_name     = var.cluster_name
                   cluster_domain   = local.cluster_domain
                   node_labels      = each.value.node_labels
                   node_taints      = each.value.node_taints
+                  extra_args       = ""
+                  kubeconfig_name  = ""
                 }
               )
   }
