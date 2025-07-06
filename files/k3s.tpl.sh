@@ -29,7 +29,8 @@ software_install() {
       CLUSTER_INIT="--cluster-init"
     fi
   %{ endif }
-  START_ARGS="server --cluster-domain '${cluster_domain_basedns}' --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
+
+  START_ARGS="server --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
   --disable-cloud-controller \
   --disable servicelb \
   --disable=metrics-server \
@@ -37,7 +38,13 @@ software_install() {
   --kubelet-arg="cloud-provider=external" \
   --kubelet-arg="provider-id=aws:///$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
   "
+
+  %{ if cluster_domain_basedns != "" }
+  START_ARGS="$${START_ARGS} --cluster-domain ${cluster_domain_basedns}"
+  %{ endif }
+
   START_ARGS="$${START_ARGS} ${extra_args}"
+  
 %{ endif }
 
 %{ if instance_role == "worker" }
