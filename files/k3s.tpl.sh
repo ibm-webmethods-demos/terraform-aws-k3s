@@ -29,7 +29,7 @@ software_install() {
       CLUSTER_INIT="--cluster-init"
     fi
   %{ endif }
-  START_ARGS="server --cluster-domain ${cluster_domain_basedns} --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
+  START_ARGS="server --cluster-domain '${cluster_domain_basedns}' --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
   --disable-cloud-controller \
   --disable servicelb \
   --disable=metrics-server \
