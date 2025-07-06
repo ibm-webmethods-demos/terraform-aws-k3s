@@ -89,7 +89,9 @@ locals {
 
   # the cloudinit_config template files
   cloudinit_config_master = [
-    for index in range(var.master_node_count) : templatefile(
+    for index in range(var.master_node_count) : 
+      base64gzip(
+        templatefile(
                 "${path.module}/files/k3s.tpl.sh",
                 {
                   instance_role    = "master"
@@ -104,11 +106,14 @@ locals {
                   extra_args       = "${local.custom_args} ${local.extra_api_args}"
                   kubeconfig_name  = local.s3_kubeconfig_filename
                 }
-              )
+        )
+      )
   ]
 
   cloudinit_config_workers = {
-    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => templatefile(
+    for worker_group_name, worker_group in local.worker_groups_map : 
+    worker_group_name => base64gzip(
+        templatefile(
                 "${path.module}/files/k3s.tpl.sh",
                 {
                   instance_role    = "worker"
@@ -124,6 +129,7 @@ locals {
                   kubeconfig_name  = ""
                 }
               )
+    )
   }
 }
 

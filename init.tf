@@ -7,7 +7,6 @@ terraform {
     }
     null     = "~> 3.2"
     random   = "~> 3.4"
-    cloudinit = "~> 2.3"
   }
 }
 

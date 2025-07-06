@@ -12,28 +12,6 @@ data "aws_ami" "default_ami" {
   }
 }
 
-data "cloudinit_config" "init-master" {
-  count         = var.master_node_count
-  gzip          = true
-  base64_encode = true
-
-  part {
-    content_type = "text/x-shellscript"
-    content = local.cloudinit_config_master[count.index]
-  }
-}
-
-data "cloudinit_config" "init-worker" {
-  for_each      = local.worker_groups_map
-  gzip          = true
-  base64_encode = true
-  
-  part {
-    content_type = "text/x-shellscript"
-    content = local.cloudinit_config_workers[each.key]
-  }
-}
-
 resource "random_password" "k3s_server_token" {
   length  = 30
   special = false

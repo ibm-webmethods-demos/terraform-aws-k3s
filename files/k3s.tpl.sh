@@ -19,8 +19,11 @@ software_install() {
   SERVER_URL="--server https://${cluster_domain}:6443"
   CLUSTER_INIT=""
   START_ARGS=""
+  DEBUG_INSTANCE_ROLE="${instance_role}"
+  DEBUG_INSTANCE_INDEX="${instance_index}"
+
 %{ if instance_role == "master" }
-  %{ if instance_index == "0" }
+  %{ if instance_index == 0 }
     if  ! nc -z -v -w1 ${cluster_domain} 6443; then
       SERVER_URL=""
       CLUSTER_INIT="--cluster-init"
@@ -59,7 +62,7 @@ software_install() {
     systemctl start k3s
   done
 
-  %{ if instance_index == "0" }
+  %{ if instance_index == 0 }
     cp /etc/rancher/k3s/k3s.yaml /tmp/
     sed -i 's/127.0.0.1/${cluster_domain}/g' /tmp/k3s.yaml
     aws s3 cp --content-type text/plain /tmp/k3s.yaml s3://${s3_bucket}/${cluster_name}/${kubeconfig_name}
