@@ -47,10 +47,10 @@ resource "aws_lb_target_group" "kubeapi" {
 }
 
 resource "aws_route53_record" "alb_ingress" {
-  count           = var.domain == "" ? 0 : 1
+  count           = local.cluster_domain_basedns == "" ? 0 : 1
   allow_overwrite = true
   zone_id         = data.aws_route53_zone.main_zone.0.id
-  name            = local.cluster_domain
+  name            = local.cluster_domain_basedns
   type            = "A"
 
   alias {

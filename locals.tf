@@ -2,7 +2,8 @@
 locals {
   name                   = var.cluster_name
   cluster_domain_validate =  "${var.cluster_name}.${var.domain}"
-  cluster_domain         = var.domain == "" ? aws_lb.kubeapi.dns_name : "${var.cluster_name}.${var.domain}"
+  cluster_domain_basedns   = var.domain == "" ? "" : "${var.cluster_name}.${var.domain}"
+  cluster_kubeapi_dns = local.cluster_domain_basedns == "" ? aws_lb.kubeapi.dns_name : local.cluster_domain_basedns
   s3_kubeconfig_filename = "kubeconfig"
   common_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
@@ -99,7 +100,8 @@ locals {
                   k3s_server_token = random_password.k3s_server_token.result
                   k3s_version      = var.k3s_version
                   cluster_name     = var.cluster_name
-                  cluster_domain   = local.cluster_domain
+                  cluster_domain_basedns   = local.cluster_domain_basedns
+                  cluster_kubeapi_dns      = local.cluster_kubeapi_dns
                   s3_bucket        = var.s3_bucket
                   node_labels      = local.master_node_labels
                   node_taints      = local.master_node_taints
@@ -121,7 +123,8 @@ locals {
                   k3s_server_token = random_password.k3s_server_token.result
                   k3s_version      = var.k3s_version
                   cluster_name     = var.cluster_name
-                  cluster_domain   = local.cluster_domain
+                  cluster_domain_basedns   = local.cluster_domain_basedns
+                  cluster_kubeapi_dns      = local.cluster_kubeapi_dns
                   node_labels      = worker_group.node_labels
                   node_taints      = worker_group.node_taints
                   s3_bucket        = ""

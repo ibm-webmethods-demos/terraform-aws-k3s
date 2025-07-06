@@ -16,7 +16,7 @@ software_install() {
 
   mount bpffs -t bpf /sys/fs/bpf
 
-  SERVER_URL="--server https://${cluster_domain}:6443"
+  SERVER_URL="--server https://${cluster_kubeapi_dns}:6443"
   CLUSTER_INIT=""
   START_ARGS=""
   DEBUG_INSTANCE_ROLE="${instance_role}"
@@ -24,16 +24,16 @@ software_install() {
 
 %{ if instance_role == "master" }
   %{ if instance_index == 0 }
-    if  ! nc -z -v -w1 ${cluster_domain} 6443; then
+    if  ! nc -z -v -w1 ${cluster_kubeapi_dns} 6443; then
       SERVER_URL=""
       CLUSTER_INIT="--cluster-init"
     fi
   %{ endif }
-  START_ARGS="server --cluster-domain ${cluster_domain} --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
+  START_ARGS="server --cluster-domain ${cluster_domain_basedns} --secrets-encryption --node-name $(curl http://169.254.169.254/latest/meta-data/local-hostname) \
   --disable-cloud-controller \
   --disable servicelb \
   --disable=metrics-server \
-  --tls-san ${cluster_domain} \
+  --tls-san ${cluster_kubeapi_dns} \
   --kubelet-arg="cloud-provider=external" \
   --kubelet-arg="provider-id=aws:///$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
   "
@@ -49,7 +49,7 @@ software_install() {
 
   START_ARGS="$${START_ARGS} ${node_labels} ${node_taints}"
   if [ ! -z "$${SERVER_URL}" ]; then
-    until (curl --connect-timeout 2 https://${cluster_domain}:6443/ping --insecure); do
+    until (curl --connect-timeout 2 https://${cluster_kubeapi_dns}:6443/ping --insecure); do
         echo 'Waiting for k3s server...'
         sleep 2
     done
@@ -64,7 +64,7 @@ software_install() {
 
   %{ if instance_index == 0 }
     cp /etc/rancher/k3s/k3s.yaml /tmp/
-    sed -i 's/127.0.0.1/${cluster_domain}/g' /tmp/k3s.yaml
+    sed -i 's/127.0.0.1/${cluster_kubeapi_dns}/g' /tmp/k3s.yaml
     aws s3 cp --content-type text/plain /tmp/k3s.yaml s3://${s3_bucket}/${cluster_name}/${kubeconfig_name}
     mkdir -p /var/lib/rancher/k3s/server/db/snapshots/
     echo "15 * * * *       root    aws s3 sync --delete /var/lib/rancher/k3s/server/db/snapshots/ s3://${s3_bucket}/${cluster_name}/backups/" >> /etc/crontab

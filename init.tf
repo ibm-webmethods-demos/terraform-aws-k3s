@@ -15,7 +15,7 @@ provider "aws" {
 }
 
 provider "kubernetes" {
-  host                   = "${local.cluster_domain}:6443"
+  host                   = "${local.cluster_kubeapi_dns}:6443"
   cluster_ca_certificate = local.k_config.host_cert
   client_key             = local.k_config.cert_data
   client_certificate     = local.k_config.user_crt
@@ -23,7 +23,7 @@ provider "kubernetes" {
 
 provider "helm" {
   kubernetes = {
-    host                   = "${local.cluster_domain}:6443"
+    host                   = "${local.cluster_kubeapi_dns}:6443"
     cluster_ca_certificate = local.k_config.host_cert
     client_key             = local.k_config.cert_data
     client_certificate     = local.k_config.user_crt
