@@ -86,6 +86,45 @@ locals {
   # useful for the scheduling actions
   current_time = timestamp()
   current_day = formatdate("YYYY-MM-DD", local.current_time)
+
+  # the cloudinit_config template files
+  cloudinit_config_master = [
+    for index in range(var.master_node_count) : templatefile(
+                "${path.module}/files/k3s.tpl.sh",
+                {
+                  instance_role    = "master"
+                  instance_index   = index
+                  k3s_server_token = random_password.k3s_server_token.result
+                  k3s_version      = var.k3s_version
+                  cluster_name     = var.cluster_name
+                  cluster_domain   = local.cluster_domain
+                  s3_bucket        = var.s3_bucket
+                  node_labels      = local.master_node_labels
+                  node_taints      = local.master_node_taints
+                  extra_args       = "${local.custom_args} ${local.extra_api_args}"
+                  kubeconfig_name  = local.s3_kubeconfig_filename
+                }
+              )
+  ]
+
+  cloudinit_config_workers = {
+    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => templatefile(
+                "${path.module}/files/k3s.tpl.sh",
+                {
+                  instance_role    = "worker"
+                  instance_index   = "null"
+                  k3s_server_token = random_password.k3s_server_token.result
+                  k3s_version      = var.k3s_version
+                  cluster_name     = var.cluster_name
+                  cluster_domain   = local.cluster_domain
+                  node_labels      = worker_group.node_labels
+                  node_taints      = worker_group.node_taints
+                  s3_bucket        = ""
+                  extra_args       = ""
+                  kubeconfig_name  = ""
+                }
+              )
+  }
 }
 
 resource "null_resource" "validate_domain_length" {
