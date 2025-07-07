@@ -1,5 +1,5 @@
 output "k8s_nlb_dns_name" {
-  value = aws_lb.kubeapi.dns_name
+  value = aws_lb.kubeingress.dns_name
 }
 
 output "kubeconfig" {

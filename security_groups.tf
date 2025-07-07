@@ -1,5 +1,5 @@
 resource "aws_security_group" "master" {
-  name   = "${local.name}-master"
+  name   = "${local.name_unique_id}-master"
   vpc_id = data.aws_subnet.private_subnet[0].vpc_id
   depends_on = [
     null_resource.validate_domain_length
@@ -85,7 +85,7 @@ resource "aws_security_group" "master" {
 
 
 resource "aws_security_group" "worker" {
-  name   = "${local.name}-worker"
+  name   = "${local.name_unique_id}-worker"
   vpc_id = data.aws_subnet.private_subnet[0].vpc_id
   depends_on = [
     null_resource.validate_domain_length
@@ -146,9 +146,9 @@ resource "aws_security_group" "worker" {
   lifecycle { create_before_destroy = true }
 }
 
-resource "aws_security_group" "kubeapi" {
-  name   = "${local.name}-kubeapi"
-  vpc_id   = data.aws_subnet.public_subnet[0].vpc_id
+resource "aws_security_group" "kubeingress" {
+  name   = "${local.name_unique_id}-kubeingress"
+  vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
   depends_on = [
     null_resource.validate_domain_length
   ]
@@ -161,7 +161,20 @@ resource "aws_security_group" "kubeapi" {
     protocol    = "TCP"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+  ingress {
+    description = "kube ingress http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }  
+  ingress {
+    description = "kube ingress https"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 0

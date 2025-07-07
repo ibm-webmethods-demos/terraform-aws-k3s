@@ -1,9 +1,10 @@
 
 locals {
   name                   = var.cluster_name
+  name_unique_id         = random_id.uniquename.id
   cluster_domain_validate =  "${var.cluster_name}.${var.domain}"
   cluster_domain_basedns   = var.domain == "" ? "" : "${var.cluster_name}.${var.domain}"
-  cluster_kubeapi_dns = local.cluster_domain_basedns == "" ? aws_lb.kubeapi.dns_name : local.cluster_domain_basedns
+  cluster_kubeapi_dns = local.cluster_domain_basedns == "" ? aws_lb.kubeingress.dns_name : local.cluster_domain_basedns
   s3_kubeconfig_filename = "kubeconfig"
   common_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"

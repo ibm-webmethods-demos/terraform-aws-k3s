@@ -1,6 +1,6 @@
 resource "aws_launch_template" "master" {
   count         = var.master_node_count
-  name_prefix   = substr("${local.name}-master-${count.index}", 0, 32)
+  name_prefix   = substr("${local.name_unique_id}-master-${count.index}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = var.master_instance_type
   user_data     = local.cloudinit_config_master[count.index]
@@ -35,7 +35,7 @@ resource "aws_launch_template" "master" {
 
 resource "aws_launch_template" "worker" {
   for_each      = local.worker_groups_map
-  name_prefix   = substr("${local.name}-worker-${each.key}", 0, 32)
+  name_prefix   = substr("${local.name_unique_id}-worker-${each.key}", 0, 32)
   image_id      = data.aws_ami.default_ami.id
   instance_type = each.value.instance_type
   user_data     = local.cloudinit_config_workers[each.key]
@@ -64,7 +64,7 @@ resource "aws_launch_template" "worker" {
 
 resource "aws_autoscaling_group" "master" {
   count               = var.enable_asg_master_nodes ? var.master_node_count : 0
-  name_prefix         = substr("${local.name}-master-${count.index}", 0, 32)
+  name_prefix         = substr("${local.name_unique_id}-master-${count.index}", 0, 32)
   desired_capacity    = 1
   max_size            = 1
   min_size            = 1
@@ -88,7 +88,7 @@ resource "aws_autoscaling_group" "master" {
     }
   }
   depends_on = [
-    aws_lb.kubeapi
+    aws_lb.kubeingress
   ]
 }
 
@@ -97,13 +97,13 @@ resource "aws_instance" "master" {
 
   launch_template {
     id      = aws_launch_template.master[count.index].id
-    version = "$Latest"
+    version = "1"
   }
 
   tags = local.master_tags
   
   depends_on = [
-    aws_lb.kubeapi,
+    aws_lb.kubeingress,
     aws_security_group.master
   ]
 }
@@ -117,11 +117,16 @@ resource "aws_lb_target_group_attachment" "master" {
 
 resource "aws_autoscaling_group" "worker" {
   for_each = local.worker_groups_map
-  name_prefix         = substr("${local.name}-worker-${each.key}", 0, 32)
+  name_prefix         = substr("${local.name_unique_id}-worker-${each.key}", 0, 32)
   max_size            = each.value.max_size
   min_size            = each.value.min_size
   desired_capacity    = each.value.desired_capacity
   vpc_zone_identifier = var.private_subnets
+
+  target_group_arns = [
+    aws_lb_target_group.kubeingress_http.arn,
+    aws_lb_target_group.kubeingress_tls.arn
+  ]
 
   launch_template {
     id      = aws_launch_template.worker[each.key].id
@@ -138,7 +143,7 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   depends_on = [
-    aws_lb.kubeapi,
+    aws_lb.kubeingress,
     aws_autoscaling_group.master,
     aws_instance.master
   ]
@@ -146,7 +151,7 @@ resource "aws_autoscaling_group" "worker" {
 
 resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
   for_each = local.worker_groups_map_with_schedule
-  scheduled_action_name  = substr("${local.name}-worker-${each.key}-shutdown", 0, 32)
+  scheduled_action_name  = substr("${local.name_unique_id}-worker-${each.key}-shutdown", 0, 32)
   min_size               = 0
   max_size               = 0
   desired_capacity       = 0

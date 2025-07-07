@@ -22,3 +22,13 @@ data "aws_route53_zone" "main_zone" {
   name         = var.domain
   private_zone = false
 }
+
+resource "random_id" "uniquename" {
+  keepers = {
+    # Generate a new id each time we switch to a new VPC
+    vpc_id = data.aws_subnet.private_subnet[0].vpc_id
+    cluster_name = var.cluster_name
+  }
+
+  byte_length = 4
+}
