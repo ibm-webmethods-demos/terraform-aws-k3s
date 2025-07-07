@@ -143,6 +143,21 @@ resource "aws_security_group" "worker" {
     security_groups = [aws_security_group.master.id]
   }
 
+  ingress {
+    description = "kube ingress nodeport for http"
+    from_port   = 30080
+    to_port     = 30080
+    protocol    = "TCP"
+    security_groups = [aws_security_group.kubeingress.id]
+  }  
+  ingress {
+    description = "kube ingress nodeport for https"
+    from_port   = 30443
+    to_port     = 30443
+    protocol    = "TCP"
+    security_groups = [aws_security_group.kubeingress.id]
+  }
+
   lifecycle { create_before_destroy = true }
 }
 

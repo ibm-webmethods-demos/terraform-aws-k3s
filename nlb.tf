@@ -74,13 +74,13 @@ resource "aws_lb_listener" "kubeingress_http" {
 
 resource "aws_lb_target_group" "kubeingress_http" {
   name     = substr("${local.name_unique_id}-http", 0, 32)
-  port     = 80
+  port     = 30080
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
   health_check {
     enabled             = true
     protocol            = "TCP"
-    port                = 80
+    port                = 30080
     interval            = 10
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -109,13 +109,13 @@ resource "aws_lb_listener" "kubeingress_tls_passthrough" {
 
 resource "aws_lb_target_group" "kubeingress_tls" {
   name     = substr("${local.name_unique_id}-tls", 0, 32)
-  port     = 443
+  port     = 30443
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
   health_check {
     enabled             = true
     protocol            = "TCP"
-    port                = 443
+    port                = 30443
     interval            = 10
     healthy_threshold   = 2
     unhealthy_threshold = 2
