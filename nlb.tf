@@ -21,6 +21,12 @@ resource "aws_lb_listener" "kubeapi" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.kubeapi.arn
   }
+  
+  lifecycle {
+    replace_triggered_by = [
+      aws_lb_target_group.kubeapi.arn
+    ]
+  }
 }
 
 resource "aws_lb_target_group" "kubeapi" {
@@ -41,9 +47,6 @@ resource "aws_lb_target_group" "kubeapi" {
     type    = "source_ip"
   }
   tags = local.common_tags
-  # depends_on = [
-  #   null_resource.validate_domain_length
-  # ]
 }
 
 resource "aws_route53_record" "alb_ingress" {
@@ -69,6 +72,12 @@ resource "aws_lb_listener" "kubeingress_http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.kubeingress_http.arn
   }
+  
+  lifecycle {
+    replace_triggered_by = [
+      aws_lb_target_group.kubeingress_http.arn
+    ]
+  }
 }
 
 resource "aws_lb_target_group" "kubeingress_http" {
@@ -89,9 +98,6 @@ resource "aws_lb_target_group" "kubeingress_http" {
     type    = "source_ip"
   }
   tags = local.common_tags
-  # depends_on = [
-  #   null_resource.validate_domain_length
-  # ]
 }
 
 resource "aws_lb_listener" "kubeingress_tls_passthrough" {
@@ -102,6 +108,12 @@ resource "aws_lb_listener" "kubeingress_tls_passthrough" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.kubeingress_tls.arn
+  }
+  
+  lifecycle {
+    replace_triggered_by = [
+      aws_lb_target_group.kubeingress_tls.arn
+    ]
   }
 }
 
@@ -123,7 +135,4 @@ resource "aws_lb_target_group" "kubeingress_tls" {
     type    = "source_ip"
   }
   tags = local.common_tags
-  # depends_on = [
-  #   null_resource.validate_domain_length
-  # ]
 }
