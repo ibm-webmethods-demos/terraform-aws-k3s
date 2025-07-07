@@ -44,7 +44,6 @@ resource "aws_lb_target_group" "kubeapi" {
   # depends_on = [
   #   null_resource.validate_domain_length
   # ]
-  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_route53_record" "alb_ingress" {
@@ -93,7 +92,6 @@ resource "aws_lb_target_group" "kubeingress_http" {
   # depends_on = [
   #   null_resource.validate_domain_length
   # ]
-  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_lb_listener" "kubeingress_tls_passthrough" {
@@ -128,5 +126,4 @@ resource "aws_lb_target_group" "kubeingress_tls" {
   # depends_on = [
   #   null_resource.validate_domain_length
   # ]
-  lifecycle { create_before_destroy = true }
 }
