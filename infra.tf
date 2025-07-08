@@ -54,6 +54,10 @@ resource "aws_launch_template" "worker" {
     }
   }
 
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
   network_interfaces {
     delete_on_termination = true
     security_groups       = concat([aws_security_group.worker.id], each.value.additional_security_group_ids)
