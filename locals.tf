@@ -86,8 +86,8 @@ locals {
   ])
   
   # useful for the scheduling actions
-  current_time = timestamp()
-  current_day = formatdate("YYYY-MM-DD", local.current_time)
+  current_time_utc = timestamp()
+  current_day_utc = formatdate("YYYY-MM-DD", local.current_time_utc)
 
   # the cloudinit_config template files
   cloudinit_config_master = [
