@@ -18,8 +18,8 @@ resource "random_password" "k3s_server_token" {
 }
 
 data "aws_route53_zone" "main_zone" {
-  count        = var.domain == "" ? 0 : 1
-  name         = var.domain
+  count        = var.cluster_domain_external == "" ? 0 : 1
+  name         = var.cluster_domain_external
   private_zone = false
 }
 

@@ -68,8 +68,14 @@ variable "s3_bucket" {
   description = "Kubeconfig Storage bucket"
 }
 
-variable "domain" {
-  description = "DNS zone record to assign to NLB"
+variable "cluster_domain_internal" {
+  description = "The domain name that will be used for internal DNS lookups within the k3s cluster."
+  default     = ""
+  type        = string
+}
+
+variable "cluster_domain_external" {
+  description = "DNS base record to be used for external access to the kubernetes cluster"
   default     = ""
   type        = string
 }
