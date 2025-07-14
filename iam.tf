@@ -33,7 +33,13 @@ EOF
 
 resource "aws_iam_policy" "master_default_policy" {
   name   = substr("${local.name_unique_id}-master-${random_pet.iam.id}", 0, 32)
-  policy = file("${path.module}/policies/master.json")
+  policy = templatefile(
+                "${path.module}/policies/master.json",
+                {
+                  hosted_zone_id    = var.cluster_domain_external == "" ? "dummy" : data.aws_route53_zone.cluster_domain_external_zone.0.id
+                  k3s_bucket_name   = var.s3_bucket
+                }
+        )
 }
 
 resource "aws_iam_policy_attachment" "master-attach-default" {
