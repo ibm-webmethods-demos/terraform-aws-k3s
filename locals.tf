@@ -3,7 +3,7 @@ locals {
   name                   = var.cluster_name
   name_unique_id         = random_id.uniquename.id
   cluster_domain_basedns   = var.cluster_domain_internal
-  cluster_domain_validate =  "${var.cluster_name}.${var.cluster_domain_external}"
+  cluster_domain_validate =  "kubeapi.${var.cluster_name}.${var.cluster_domain_external}"
   cluster_kubeapi_dns = var.cluster_domain_external == "" ? aws_lb.kubeingress.dns_name : "kubeapi.${var.cluster_name}.${var.cluster_domain_external}"
   s3_kubeconfig_filename = "kubeconfig"
   common_tags = {
