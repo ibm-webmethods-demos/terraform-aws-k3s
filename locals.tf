@@ -39,6 +39,7 @@ locals {
       instance_type                 = lookup(node_group_config, "instance_type", local.default_worker_instance_type)
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
       daily_shutdown_utc            = lookup(node_group_config, "daily_shutdown_utc", "")
+      daily_startup_utc             = lookup(node_group_config, "daily_startup_utc", "")
        
       tags = [
         for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :

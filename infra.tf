@@ -159,10 +159,11 @@ resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
   min_size               = 0
   max_size               = 0
   desired_capacity       = 0
-  recurrence             = "0 0 * * *"
+  recurrence             = "0 0 * * 1-5"
 
   # the logic is: if time mentionned is in the future compared to current time, use that. if not, add 24h to that time
   start_time             = timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h") 
+  end_time               = timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") 
   time_zone              = "Etc/UTC"
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }
