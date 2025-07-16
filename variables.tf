@@ -139,3 +139,9 @@ variable "enable_asg_worker_nodes" {
   type        = bool
   default     = true
 }
+
+variable "enable_nlb_cross_az" {
+  description = "Turn on/off cross AZ load balancing for the LB"
+  type        = bool
+  default     = true
+}

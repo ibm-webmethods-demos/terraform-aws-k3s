@@ -5,7 +5,7 @@ resource "aws_lb" "kubeingress" {
   subnets            = var.public_subnets
   security_groups    = [aws_security_group.kubeingress.id]
   tags               = local.common_tags
-  enable_cross_zone_load_balancing = true
+  enable_cross_zone_load_balancing = var.enable_nlb_cross_az
   
   # depends_on = [
   #   null_resource.validate_domain_length
