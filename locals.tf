@@ -40,8 +40,13 @@ locals {
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
       daily_shutdown_utc            = lookup(node_group_config, "daily_shutdown_utc", "")
       daily_startup_utc             = lookup(node_group_config, "daily_startup_utc", "")
-       
-      tags = [
+      
+      tags = {
+        for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :
+        tag_key => tag_val
+      }
+
+      tags_asg = [
         for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :
         {
           key                 = tag_key

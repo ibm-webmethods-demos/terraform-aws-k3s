@@ -30,6 +30,11 @@ resource "aws_launch_template" "master" {
     subnet_id     = data.aws_subnet.private_subnet[count.index%length(data.aws_subnet.private_subnet)].id
   }
   
+  tag_specifications {
+    resource_type = "instance"
+    tags =  local.master_tags
+  }
+  
   tags = local.common_tags
 }
 
@@ -61,6 +66,11 @@ resource "aws_launch_template" "worker" {
   network_interfaces {
     delete_on_termination = true
     security_groups       = concat([aws_security_group.worker.id], each.value.additional_security_group_ids)
+  } 
+  
+  tag_specifications {
+    resource_type = "instance"
+    tags = each.value.tags
   }
 
   tags = local.common_tags
@@ -138,7 +148,7 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   dynamic "tag" {
-    for_each = each.value.tags
+    for_each = each.value.tags_asg
     content {
       key                 = tag.value.key
       propagate_at_launch = tag.value.propagate_at_launch
@@ -161,9 +171,16 @@ resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
   desired_capacity       = 0
   recurrence             = "0 0 * * 1-5"
 
-  # the logic is: if time mentionned is in the future compared to current time, use that. if not, add 24h to that time
+  # The logic is: 
+  # IF daily_shutdown_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
+  # AND for end time, do the same logic
+  # FINALLY: IF "end time" results in being before than start time, add 24h to that because it would fail otherwise 
   start_time             = timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h") 
-  end_time               = timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") 
+  end_time               = timecmp(
+                            timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h"),
+                            timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h"),
+                            ) == 1 ? timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") : timeadd(timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h"), "24h")
+
   time_zone              = "Etc/UTC"
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }
