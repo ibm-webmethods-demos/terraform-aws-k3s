@@ -164,8 +164,8 @@ resource "aws_autoscaling_group" "worker" {
 }
 
 resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
-  for_each = local.worker_groups_map_with_schedule
-  scheduled_action_name  = substr("${local.name_unique_id}-worker-${each.key}-shutdown", 0, 32)
+  for_each = local.worker_groups_map_with_daily_shutdown_schedule
+  scheduled_action_name  = substr("shutdown-${each.key}-${local.name_unique_id}", 0, 32)
   min_size               = 0
   max_size               = 0
   desired_capacity       = 0
@@ -173,14 +173,22 @@ resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
 
   # The logic is: 
   # IF daily_shutdown_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
-  # AND for end time, do the same logic
-  # FINALLY: IF "end time" results in being before than start time, add 24h to that because it would fail otherwise 
   start_time             = timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h") 
-  end_time               = timecmp(
-                            timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h"),
-                            timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h"),
-                            ) == 1 ? timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") : timeadd(timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h"), "24h")
+  time_zone              = "Etc/UTC"
+  autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
+}
 
+resource "aws_autoscaling_schedule" "worker_daily_startup" {
+  for_each = local.worker_groups_map_with_daily_startup_schedule
+  scheduled_action_name  = substr("startup-${each.key}-${local.name_unique_id}", 0, 32)
+  max_size            = each.value.max_size
+  min_size            = each.value.min_size
+  desired_capacity    = each.value.desired_capacity
+  recurrence             = "0 0 * * 1-5"
+
+  # The logic is: 
+  # IF daily_startup_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
+  start_time             = timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") 
   time_zone              = "Etc/UTC"
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }

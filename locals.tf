@@ -57,10 +57,14 @@ locals {
     }
   }
   
-  worker_groups_map_with_schedule = {
+  worker_groups_map_with_daily_shutdown_schedule = {
     for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.daily_shutdown_utc != ""
   }
 
+  worker_groups_map_with_daily_startup_schedule = {
+    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.daily_startup_utc != ""
+  }
+  
   master_tags = merge(var.master_additional_tags, local.common_tags, { Name = join("-", [var.cluster_name,"master"]), Description = join("-", [var.cluster_name,"master"]) })
   
   master_tags_asg = [
