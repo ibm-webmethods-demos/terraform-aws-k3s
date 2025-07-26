@@ -38,8 +38,10 @@ locals {
       root_volume_size              = lookup(node_group_config, "root_volume_size", local.default_worker_root_volume_size)
       instance_type                 = lookup(node_group_config, "instance_type", local.default_worker_instance_type)
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
-      cron_shutdown_utc            = lookup(node_group_config, "cron_shutdown_utc", "")
+      cron_shutdown_utc             = lookup(node_group_config, "cron_shutdown_utc", "")
+      first_shutdown_utc            = lookup(node_group_config, "first_shutdown_utc", "")
       cron_startup_utc             = lookup(node_group_config, "cron_startup_utc", "")
+      first_startup_utc             = lookup(node_group_config, "first_startup_utc", "")
       
       tags = {
         for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :

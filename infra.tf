@@ -16,6 +16,7 @@ resource "aws_launch_template" "master" {
       encrypted   = true
       volume_type = "gp2"
       volume_size = var.master_root_volume_size
+      delete_on_termination = false
     }
   }
 
@@ -56,6 +57,7 @@ resource "aws_launch_template" "worker" {
       encrypted   = true
       volume_type = "gp2"
       volume_size = each.value.root_volume_size
+      delete_on_termination = true
     }
   }
 
@@ -171,7 +173,11 @@ resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
   desired_capacity       = 0
   recurrence             = each.value.cron_shutdown_utc
   time_zone              = "Etc/UTC"
-  start_time             = timeadd(local.current_time_utc, "5m")
+
+  # The logic is: 
+  # IF first_shutdown_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
+  start_time             = timecmp("${local.current_day_utc}T${each.value.first_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.first_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.first_shutdown_utc}Z", "24h") 
+  
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }
 
@@ -183,6 +189,10 @@ resource "aws_autoscaling_schedule" "worker_daily_startup" {
   desired_capacity       = each.value.desired_capacity
   recurrence             = each.value.cron_startup_utc
   time_zone              = "Etc/UTC"
-  start_time             = timeadd(local.current_time_utc, "5m")
+
+  # The logic is: 
+  # IF first_startup_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
+  start_time             = timecmp("${local.current_day_utc}T${each.value.first_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.first_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.first_startup_utc}Z", "24h") 
+  
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }
