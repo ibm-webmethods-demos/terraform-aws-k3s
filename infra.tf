@@ -169,26 +169,20 @@ resource "aws_autoscaling_schedule" "worker_daily_shutdown" {
   min_size               = 0
   max_size               = 0
   desired_capacity       = 0
-  recurrence             = "0 0 * * 1-5"
-
-  # The logic is: 
-  # IF daily_shutdown_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
-  start_time             = timecmp("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_shutdown_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_shutdown_utc}Z", "24h") 
+  recurrence             = each.value.cron_shutdown_utc
   time_zone              = "Etc/UTC"
+  start_time             = timeadd(local.current_time_utc, "5m")
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }
 
 resource "aws_autoscaling_schedule" "worker_daily_startup" {
   for_each = local.worker_groups_map_with_daily_startup_schedule
   scheduled_action_name  = substr("startup-${each.key}-${local.name_unique_id}", 0, 32)
-  max_size            = each.value.max_size
-  min_size            = each.value.min_size
-  desired_capacity    = each.value.desired_capacity
-  recurrence             = "0 0 * * 1-5"
-
-  # The logic is: 
-  # IF daily_startup_utc mentionned is in the future compared to current time, use that. if not, add 24h to that time
-  start_time             = timecmp("${local.current_day_utc}T${each.value.daily_startup_utc}Z",local.current_time_utc) == 1 ? "${local.current_day_utc}T${each.value.daily_startup_utc}Z" : timeadd("${local.current_day_utc}T${each.value.daily_startup_utc}Z", "24h") 
+  max_size               = each.value.max_size
+  min_size               = each.value.min_size
+  desired_capacity       = each.value.desired_capacity
+  recurrence             = each.value.cron_startup_utc
   time_zone              = "Etc/UTC"
+  start_time             = timeadd(local.current_time_utc, "5m")
   autoscaling_group_name = aws_autoscaling_group.worker[each.key].name
 }

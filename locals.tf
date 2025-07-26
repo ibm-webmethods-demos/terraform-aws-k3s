@@ -38,8 +38,8 @@ locals {
       root_volume_size              = lookup(node_group_config, "root_volume_size", local.default_worker_root_volume_size)
       instance_type                 = lookup(node_group_config, "instance_type", local.default_worker_instance_type)
       additional_security_group_ids = sort(lookup(node_group_config, "additional_security_group_ids", []))
-      daily_shutdown_utc            = lookup(node_group_config, "daily_shutdown_utc", "")
-      daily_startup_utc             = lookup(node_group_config, "daily_startup_utc", "")
+      cron_shutdown_utc            = lookup(node_group_config, "cron_shutdown_utc", "")
+      cron_startup_utc             = lookup(node_group_config, "cron_startup_utc", "")
       
       tags = {
         for tag_key, tag_val in merge(lookup(node_group_config, "tags", {}), local.common_tags, { Name = join("-", [var.cluster_name,node_group_config.name]), Description = join("-", [var.cluster_name,node_group_config.name]) }) :
@@ -58,11 +58,11 @@ locals {
   }
   
   worker_groups_map_with_daily_shutdown_schedule = {
-    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.daily_shutdown_utc != ""
+    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.cron_shutdown_utc != ""
   }
 
   worker_groups_map_with_daily_startup_schedule = {
-    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.daily_startup_utc != ""
+    for worker_group_name, worker_group in local.worker_groups_map : worker_group_name => worker_group if worker_group.cron_startup_utc != ""
   }
   
   master_tags = merge(var.master_additional_tags, local.common_tags, { Name = join("-", [var.cluster_name,"master"]), Description = join("-", [var.cluster_name,"master"]) })
