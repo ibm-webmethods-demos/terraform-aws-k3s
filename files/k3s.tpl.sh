@@ -35,6 +35,9 @@ software_install() {
   --disable servicelb \
   --disable=metrics-server \
   --tls-san ${cluster_kubeapi_dns} \
+  --etcd-snapshot-schedule-cron="0 17 * * *" \
+  --etcd-snapshot-dir="/var/lib/rancher/k3s/server/db/snapshots/" \
+  --etcd-snapshot-retention=10 \
   --kubelet-arg="cloud-provider=external" \
   --kubelet-arg="provider-id=aws:///$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
   "
