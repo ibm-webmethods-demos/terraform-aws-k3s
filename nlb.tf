@@ -85,6 +85,10 @@ resource "aws_lb_target_group" "kubeingress_http" {
   port     = 30080
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
+  
+  # Enable Proxy Protocol v2
+  proxy_protocol_v2 = true 
+
   health_check {
     enabled             = true
     protocol            = "TCP"
@@ -136,6 +140,10 @@ resource "aws_lb_target_group" "kubeingress_tls" {
   port     = 30443
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
+  
+  # Enable Proxy Protocol v2
+  proxy_protocol_v2 = true 
+
   health_check {
     enabled             = true
     protocol            = "TCP"
