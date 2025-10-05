@@ -86,8 +86,8 @@ resource "aws_lb_target_group" "kubeingress_http" {
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
   
-  # Enable Proxy Protocol v2
-  proxy_protocol_v2 = true 
+  # Enable Proxy Protocol v2 ==> this doen not work when enabled
+  # proxy_protocol_v2 = true
 
   health_check {
     enabled             = true
@@ -141,8 +141,8 @@ resource "aws_lb_target_group" "kubeingress_tls" {
   protocol = "TCP"
   vpc_id   = data.aws_subnet.private_subnet[0].vpc_id
   
-  # Enable Proxy Protocol v2
-  proxy_protocol_v2 = true 
+  # Enable Proxy Protocol v2 ==> this doen not work when enabled
+  # proxy_protocol_v2 = true
 
   health_check {
     enabled             = true
